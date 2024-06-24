@@ -123,14 +123,28 @@ module Fastlane
             }
           )
         end
-
-        if !`which bunx`.empty?
-          if `bun pm ls`.include?('@capacitor/assets')
-            sh "bunx capacitor-assets generate"
+        
+        is_windows = (ENV['OS'] == 'Windows_NT')
+        if is_windows
+          output = `powershell -Command "(gcm bunx).Path"`
+          if !output.empty?
+            if `bun pm ls`.include?('@capacitor/assets')
+              sh "bunx capacitor-assets generate"
+            end
+          else
+            if `npm list @capacitor/assets`.include?('@capacitor/assets')
+              sh "npx capacitor-assets generate"
+            end
           end
-        else
-          if `npm list @capacitor/assets`.include?('@capacitor/assets')
-            sh "npx capacitor-assets generate"
+        else 
+          if !`which bunx`.empty?
+            if `bun pm ls`.include?('@capacitor/assets')
+              sh "bunx capacitor-assets generate"
+            end
+          else
+            if `npm list @capacitor/assets`.include?('@capacitor/assets')
+              sh "npx capacitor-assets generate"
+            end
           end
         end
 
