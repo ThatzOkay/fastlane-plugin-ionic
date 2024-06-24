@@ -1,4 +1,4 @@
-require 'fastlane/plugin/ionic/version'
+require 'fastlane/plugin/ionic/capacitor/version'
 
 module Fastlane
   module Ionic
