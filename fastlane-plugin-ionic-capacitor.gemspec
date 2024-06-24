@@ -4,13 +4,13 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fastlane/plugin/ionic/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'fastlane-plugin-ionic'
+  spec.name          = 'fastlane-plugin-ionic-capacitor'
   spec.version       = Fastlane::Ionic::VERSION
   spec.author        = 'ThatzOkay'
   spec.email         = 'noduhgamingxd@gmail.com'
 
   spec.summary       = 'Build your Ionic app'
-  spec.homepage      = "https://github.com/ThatzOkay/fastlane-plugin-ionic"
+  spec.homepage      = "https://github.com/ThatzOkay/fastlane-plugin-ionic-capacitor"
   spec.license       = "MIT"
 
   spec.files         = Dir["lib/**/*"] + %w[README.md LICENSE]
