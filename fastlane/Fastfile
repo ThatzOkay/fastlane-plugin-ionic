@@ -4,7 +4,7 @@ platform :ios do
   lane :deploy do
     match(type: "appstore")
     ionic(platform: 'ios')
-    deliver(ipa: ENV('CORDOVA_IOS_RELEASE_BUILD_PATH'))
+    deliver(ipa: ENV('CAPACITOR_IOS_RELEASE_BUILD_PATH'))
   end
 end
 
@@ -19,6 +19,6 @@ platform :android do
       keystore_password: 'password',
       build_flag: ['-UseModernBuildSystem=0']
     )
-    supply(apk: ENV('CORDOVA_ANDROID_RELEASE_BUILD_PATH'))
+    supply(apk: ENV('CAPACITOR_ANDROID_RELEASE_BUILD_PATH'))
   end
 end

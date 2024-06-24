@@ -1,8 +1,8 @@
 module Fastlane
   module Actions
     module SharedValues
-      CORDOVA_IOS_RELEASE_BUILD_PATH = :CORDOVA_IOS_RELEASE_BUILD_PATH
-      CORDOVA_ANDROID_RELEASE_BUILD_PATH = :CORDOVA_ANDROID_RELEASE_BUILD_PATH
+      CAPACITOR_IOS_RELEASE_BUILD_PATH = :CAPACITOR_IOS_RELEASE_BUILD_PATH
+      CAPACITOR_ANDROID_RELEASE_BUILD_PATH = :CAPACITOR_ANDROID_RELEASE_BUILD_PATH
     end
 
     class IonicAction < Action
@@ -15,7 +15,7 @@ module Fastlane
         keystore_alias:       'alias',
         build_number:         'versionCode',
         min_sdk_version:      'gradleArg=-PcdvMinSdkVersion',
-        cordova_no_fetch:     'cordovaNoFetch',
+        capacitor_no_fetch:     'capacitorNoFetch',
         android_package_type: 'packageType'
       }
 
@@ -81,17 +81,17 @@ module Fastlane
       def self.check_platform(params)
         platform = params[:platform]
         args = []
-        args << '--nofetch' if params[:cordova_no_fetch]
-        args << '--no-resources' if params[:cordova_no_resources]
-        if platform && !File.directory?("./platforms/#{platform}")
-          sh "ionic cordova platform add #{platform} --no-interactive #{args.join(' ')}"
+        args << '--nofetch' if params[:capacitor_no_fetch]
+        args << '--no-resources' if params[:capacitor_no_resources]
+        if platform && !File.directory?("./#{platform}")
+          sh "ionic capacitor platform add #{platform} --no-interactive #{args.join(' ')}"
         end
       end
 
       # app_name
       def self.get_app_name
         config = REXML::Document.new(File.open('config.xml'))
-        return config.elements['widget'].elements['name'].first.value # TODO: Simplify!? (Check logic in cordova)
+        return config.elements['widget'].elements['name'].first.value # TODO: Simplify!? (Check logic in capacitor)
       end
 
       # actual building! (run step #2)
@@ -102,23 +102,23 @@ module Fastlane
         args << '--browserify' if params[:browserify]
         args << '--verbose' if params[:verbose]
 
-        if !params[:cordova_build_config_file].to_s.empty?
-          args << "--buildConfig=#{Shellwords.escape(params[:cordova_build_config_file])}"
+        if !params[:capacitor_build_config_file].to_s.empty?
+          args << "--buildConfig=#{Shellwords.escape(params[:capacitor_build_config_file])}"
         end
 
         android_args = self.get_android_args(params) if params[:platform].to_s == 'android'
         ios_args = self.get_ios_args(params) if params[:platform].to_s == 'ios'
 
-        if params[:cordova_prepare]
+        if params[:capacitor_prepare]
           # TODO: Remove params not allowed/used for `prepare`
-          sh "ionic cordova prepare #{params[:platform]} --no-interactive #{args.join(' ')}"
+          sh "ionic capacitor prepare #{params[:platform]} --no-interactive #{args.join(' ')}"
         end
 
         # special handling for `build_number` param
         if params[:platform].to_s == 'ios' && !params[:build_number].to_s.empty?
           cf_bundle_version = params[:build_number].to_s
           Actions::UpdateInfoPlistAction.run(
-            xcodeproj: "./platforms/ios/#{self.get_app_name}.xcodeproj",
+            xcodeproj: "./ios/#{self.get_app_name}.xcodeproj",
             plist_path: "#{self.get_app_name}/#{self.get_app_name}-Info.plist",
             block: lambda { |plist|
               plist['CFBundleVersion'] = cf_bundle_version
@@ -127,9 +127,9 @@ module Fastlane
         end
 
         if params[:platform].to_s == 'ios'
-          sh "ionic cordova compile #{params[:platform]} --no-interactive #{args.join(' ')} -- #{ios_args}" 
+          sh "ionic capacitor compile #{params[:platform]} --no-interactive #{args.join(' ')} -- #{ios_args}" 
         elsif params[:platform].to_s == 'android'
-          sh "ionic cordova compile #{params[:platform]} --no-interactive #{args.join(' ')} -- -- #{android_args}" 
+          sh "ionic capacitor compile #{params[:platform]} --no-interactive #{args.join(' ')} -- -- #{android_args}" 
         end
       end
 
@@ -143,8 +143,8 @@ module Fastlane
         android_package_type = params[:android_package_type] || 'apk'
         android_package_extension = android_package_type == 'bundle' ? '.aab' : '.apk'
 
-        ENV['CORDOVA_ANDROID_RELEASE_BUILD_PATH'] = "./platforms/android/app/build/outputs/#{android_package_type}/#{build_type}/app-#{build_type}#{android_package_extension}"
-        ENV['CORDOVA_IOS_RELEASE_BUILD_PATH'] = "./platforms/ios/build/device/#{app_name}.ipa"
+        ENV['CAPACITOR_ANDROID_RELEASE_BUILD_PATH'] = "./android/app/build/outputs/#{android_package_type}/#{build_type}/app-#{build_type}#{android_package_extension}"
+        ENV['CAPACITOR_IOS_RELEASE_BUILD_PATH'] = "./ios/build/device/#{app_name}.ipa"
 
         # TODO: https://github.com/bamlab/fastlane-plugin-cordova/issues/7
         # TODO: Set env vars that gym and Co automatically use
@@ -172,7 +172,7 @@ module Fastlane
         [
           FastlaneCore::ConfigItem.new(
             key: :platform,
-            env_name: "CORDOVA_PLATFORM",
+            env_name: "CAPACITOR_PLATFORM",
             description: "Platform to build on. Should be either android or ios",
             is_string: true,
             default_value: '',
@@ -182,7 +182,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :release,
-            env_name: "CORDOVA_RELEASE",
+            env_name: "CAPACITOR_RELEASE",
             description: "Build for release if true, or for debug if false",
             is_string: false,
             default_value: true,
@@ -192,7 +192,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :device,
-            env_name: "CORDOVA_DEVICE",
+            env_name: "CAPACITOR_DEVICE",
             description: "Build for device",
             is_string: false,
             default_value: true,
@@ -212,7 +212,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :type,
-            env_name: "CORDOVA_IOS_PACKAGE_TYPE",
+            env_name: "CAPACITOR_IOS_PACKAGE_TYPE",
             description: "This will determine what type of build is generated by Xcode. Valid options are development, enterprise, adhoc, and appstore",
             is_string: true,
             default_value: 'appstore',
@@ -222,7 +222,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :verbose,
-            env_name: "CORDOVA_VERBOSE",
+            env_name: "CAPACITOR_VERBOSE",
             description: "Pipe out more verbose output to the shell",
             default_value: false,
             is_string: false,
@@ -232,21 +232,21 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :team_id,
-            env_name: "CORDOVA_IOS_TEAM_ID",
+            env_name: "CAPACITOR_IOS_TEAM_ID",
             description: "The development team (Team ID) to use for code signing",
             is_string: true,
             default_value: CredentialsManager::AppfileConfig.try_fetch_value(:team_id)
           ),
           FastlaneCore::ConfigItem.new(
             key: :provisioning_profile,
-            env_name: "CORDOVA_IOS_PROVISIONING_PROFILE",
+            env_name: "CAPACITOR_IOS_PROVISIONING_PROFILE",
             description: "GUID of the provisioning profile to be used for signing",
             is_string: true,
             default_value: ''
           ),
           FastlaneCore::ConfigItem.new(
             key: :android_package_type,
-            env_name: "CORDOVA_ANDROID_PACKAGE_TYPE",
+            env_name: "CAPACITOR_ANDROID_PACKAGE_TYPE",
             description: "This will determine what type of Android build is generated. Valid options are apk or bundle",
             default_value: 'apk',
             verify_block: proc do |value|
@@ -255,86 +255,86 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :keystore_path,
-            env_name: "CORDOVA_ANDROID_KEYSTORE_PATH",
+            env_name: "CAPACITOR_ANDROID_KEYSTORE_PATH",
             description: "Path to the Keystore for Android",
             is_string: true,
             default_value: ''
           ),
           FastlaneCore::ConfigItem.new(
             key: :keystore_password,
-            env_name: "CORDOVA_ANDROID_KEYSTORE_PASSWORD",
+            env_name: "CAPACITOR_ANDROID_KEYSTORE_PASSWORD",
             description: "Android Keystore password",
             is_string: true,
             default_value: ''
           ),
           FastlaneCore::ConfigItem.new(
             key: :key_password,
-            env_name: "CORDOVA_ANDROID_KEY_PASSWORD",
+            env_name: "CAPACITOR_ANDROID_KEY_PASSWORD",
             description: "Android Key password (default is keystore password)",
             is_string: true,
             default_value: ''
           ),
           FastlaneCore::ConfigItem.new(
             key: :keystore_alias,
-            env_name: "CORDOVA_ANDROID_KEYSTORE_ALIAS",
+            env_name: "CAPACITOR_ANDROID_KEYSTORE_ALIAS",
             description: "Android Keystore alias",
             is_string: true,
             default_value: ''
           ),
           FastlaneCore::ConfigItem.new(
             key: :build_number,
-            env_name: "CORDOVA_BUILD_NUMBER",
+            env_name: "CAPACITOR_BUILD_NUMBER",
             description: "Sets the build number for iOS and version code for Android",
             optional: true,
             is_string: false
           ),
           FastlaneCore::ConfigItem.new(
             key: :browserify,
-            env_name: "CORDOVA_BROWSERIFY",
+            env_name: "CAPACITOR_BROWSERIFY",
             description: "Specifies whether to browserify build or not",
             default_value: false,
             is_string: false
           ),
           FastlaneCore::ConfigItem.new(
-            key: :cordova_prepare,
-            env_name: "CORDOVA_PREPARE",
-            description: "Specifies whether to run `ionic cordova prepare` before building",
+            key: :capacitor_prepare,
+            env_name: "CAPACITOR_PREPARE",
+            description: "Specifies whether to run `ionic capacitor prepare` before building",
             default_value: true,
             is_string: false
           ),
           FastlaneCore::ConfigItem.new(
             key: :min_sdk_version,
-            env_name: "CORDOVA_ANDROID_MIN_SDK_VERSION",
+            env_name: "CAPACITOR_ANDROID_MIN_SDK_VERSION",
             description: "Overrides the value of minSdkVersion set in AndroidManifest.xml",
             default_value: '',
             is_string: false
           ),
           FastlaneCore::ConfigItem.new(
-            key: :cordova_no_fetch,
-            env_name: "CORDOVA_NO_FETCH",
-            description: "Call `cordova platform add` with `--nofetch` parameter",
+            key: :capacitor_no_fetch,
+            env_name: "CAPACITOR_NO_FETCH",
+            description: "Call `capacitor platform add` with `--nofetch` parameter",
             default_value: false,
             is_string: false
           ),
           FastlaneCore::ConfigItem.new(
-            key: :cordova_no_resources,
-            env_name: "CORDOVA_NO_RESOURCES",
-            description: "Call `cordova platform add` with `--no-resources` parameter",
+            key: :capacitor_no_resources,
+            env_name: "CAPACITOR_NO_RESOURCES",
+            description: "Call `capacitor platform add` with `--no-resources` parameter",
             default_value: false,
             is_string: false
           ),
           FastlaneCore::ConfigItem.new(
             key: :build_flag,
-            env_name: "CORDOVA_IOS_BUILD_FLAG",
+            env_name: "CAPACITOR_IOS_BUILD_FLAG",
             description: "An array of Xcode buildFlag. Will be appended on compile command",
             is_string: false,
             optional: true,
             default_value: []
           ),
           FastlaneCore::ConfigItem.new(
-            key: :cordova_build_config_file,
-            env_name: "CORDOVA_BUILD_CONFIG_FILE",
-            description: "Call `ionic cordova compile` with `--buildConfig=<ConfigFile>` to specify build config file path",
+            key: :capacitor_build_config_file,
+            env_name: "CAPACITOR_BUILD_CONFIG_FILE",
+            description: "Call `ionic capacitor compile` with `--buildConfig=<ConfigFile>` to specify build config file path",
             is_string: true,
             optional: true,
             default_value: ''
@@ -344,13 +344,13 @@ module Fastlane
 
       def self.output
         [
-          ['CORDOVA_ANDROID_RELEASE_BUILD_PATH', 'Path to the signed release APK or AAB if it was generated'],
-          ['CORDOVA_IOS_RELEASE_BUILD_PATH', 'Path to the signed release IPA if it was generated']
+          ['CAPACITOR_ANDROID_RELEASE_BUILD_PATH', 'Path to the signed release APK or AAB if it was generated'],
+          ['CAPACITOR_IOS_RELEASE_BUILD_PATH', 'Path to the signed release IPA if it was generated']
         ]
       end
 
       def self.authors
-        ['Jan Piotrowski']
+        ['ThatzOkay']
       end
 
       def self.is_supported?(platform)
