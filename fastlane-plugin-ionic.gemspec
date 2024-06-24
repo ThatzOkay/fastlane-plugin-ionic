@@ -1,11 +1,11 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'fastlane/plugin/ionic-capacitor/version'
+require 'fastlane/plugin/ionic/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'fastlane-plugin-ionic-capacitor'
-  spec.version       = Fastlane::IonicCapacitor::VERSION
+  spec.name          = 'fastlane-plugin-ionic'
+  spec.version       = Fastlane::Ionic::VERSION
   spec.author        = 'ThatzOkay'
   spec.email         = 'noduhgamingxd@gmail.com'
 

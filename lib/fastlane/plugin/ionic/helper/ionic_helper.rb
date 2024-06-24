@@ -1,6 +1,6 @@
 module Fastlane
   module Helper
-    class IonicCapacitorHelper
+    class IonicHelper
       # class methods that you define here become available in your action
       # as `Helper::IonicHelper.your_method`
       #

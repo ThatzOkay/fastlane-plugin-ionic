@@ -5,7 +5,7 @@ module Fastlane
       CAPACITOR_ANDROID_RELEASE_BUILD_PATH = :CAPACITOR_ANDROID_RELEASE_BUILD_PATH
     end
 
-    class IonicCapacitorAction < Action
+    class IonicAction < Action
       # valid action params
 
       ANDROID_ARGS_MAP = {
