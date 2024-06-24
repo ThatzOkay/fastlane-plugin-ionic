@@ -1,4 +1,4 @@
-describe Fastlane::Actions::IonicAction do
+describe Fastlane::Actions::IonicCapacitorAction do
   describe '#run' do
   end
 end
