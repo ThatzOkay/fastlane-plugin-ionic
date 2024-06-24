@@ -124,6 +124,16 @@ module Fastlane
           )
         end
 
+        if !`which bunx`.empty?
+          if `bun pm ls`.include?('@capacitor/assets')
+            sh "bunx capacitor-assets generate"
+          end
+        else
+          if `npm list @capacitor/assets`.include?('@capacitor/assets')
+            sh "npx capacitor-assets generate"
+          end
+        end
+
         if params[:platform].to_s == 'ios'
           sh "ionic capacitor build #{params[:platform]} --no-open --no-interactive #{args.join(' ')} -- #{ios_args}" 
           sh "xcodebuild -workspace ios/#{self.get_app_name}.xcworkspace -scheme #{self.get_app_name} #{ios_args}"
