@@ -43,7 +43,10 @@ module Fastlane
           # handle all other cases
           else
             unless param_value.to_s.empty?
-              platform_args << "--#{cli_param}=#{param_value.shellescape}" if param_value.is_a?(String)
+              if param_value.is_a?(String)
+                platform_args << "--#{cli_param}=#{param_value.shellescape}"
+              else
+              end
             end
           end
         end
@@ -90,13 +93,13 @@ module Fastlane
 
       # app_name
       def self.get_app_name
-        config = REXML::Document.new(File.open('config.xml'))
-        return config.elements['widget'].elements['name'].first.value # TODO: Simplify!? (Check logic in capacitor)
+        config = JSON.parse(File.read('ionic.config.json'))
+        return config['name']
       end
 
       # actual building! (run step #2)
       def self.build(params)
-        args = [params[:release] ? '--release' : '--debug']
+        args = [params[:release] ? '--prod' : '--debug']
         args << '--device' if params[:device]
         args << '--prod' if params[:prod]
         args << '--browserify' if params[:browserify]
@@ -108,11 +111,6 @@ module Fastlane
 
         android_args = self.get_android_args(params) if params[:platform].to_s == 'android'
         ios_args = self.get_ios_args(params) if params[:platform].to_s == 'ios'
-
-        if params[:capacitor_prepare]
-          # TODO: Remove params not allowed/used for `prepare`
-          sh "ionic capacitor prepare #{params[:platform]} --no-interactive #{args.join(' ')}"
-        end
 
         # special handling for `build_number` param
         if params[:platform].to_s == 'ios' && !params[:build_number].to_s.empty?
@@ -127,23 +125,41 @@ module Fastlane
         end
 
         if params[:platform].to_s == 'ios'
-          sh "ionic capacitor compile #{params[:platform]} --no-interactive #{args.join(' ')} -- #{ios_args}" 
+          sh "ionic capacitor build #{params[:platform]} --no-open --no-interactive #{args.join(' ')} -- #{ios_args}" 
+          sh "xcodebuild -workspace ios/#{self.get_app_name}.xcworkspace -scheme #{self.get_app_name} #{ios_args}"
         elsif params[:platform].to_s == 'android'
-          sh "ionic capacitor compile #{params[:platform]} --no-interactive #{args.join(' ')} -- -- #{android_args}" 
+          sh "ionic capacitor build #{params[:platform]} --no-open --no-interactive #{args.join(' ')} -- -- #{android_args}" 
+          if params[:android_package_type] == 'bundle'
+            if !params[:keystore_path].empty?
+              sh "./android/gradlew --project-dir android app:bundleRelease -Pandroid.injected.signing.store.file=#{params[:keystore_path]} -Pandroid.injected.signing.store.password=#{params[:keystore_password]} -Pandroid.injected.signing.key.alias=#{params[:keystore_alias]} -Pandroid.injected.signing.key.password=#{params[:key_password]}"
+            else
+              sh "./android/gradlew --project-dir android app:bundleRelease"
+            end
+          else
+            if !params[:keystore_path].empty?
+              sh "./android/gradlew --project-dir android app:assembleRelease -Pandroid.injected.signing.store.file=#{params[:keystore_path]} -Pandroid.injected.signing.store.password=#{params[:keystore_password]} -Pandroid.injected.signing.key.alias=#{params[:keystore_alias]} -Pandroid.injected.signing.key.password=#{params[:key_password]}"
+            else
+              sh "./android/gradlew --project-dir android app:assembleRelease"
+            end
+          end
         end
       end
 
       # export build paths (run step #3)
-      def self.set_build_paths(is_release)
+      def self.set_build_paths(params, is_release)
         app_name = self.get_app_name
         build_type = is_release ? 'release' : 'debug'
 
         # Update the build path accordingly if Android is being
         # built as an Android Application Bundle.
+
         android_package_type = params[:android_package_type] || 'apk'
         android_package_extension = android_package_type == 'bundle' ? '.aab' : '.apk'
 
-        ENV['CAPACITOR_ANDROID_RELEASE_BUILD_PATH'] = "./android/app/build/outputs/#{android_package_type}/#{build_type}/app-#{build_type}#{android_package_extension}"
+        is_signed = !params[:keystore_path].empty?
+        signed = is_signed ? '' : '-unsigned'
+
+        ENV['CAPACITOR_ANDROID_RELEASE_BUILD_PATH'] = "./android/app/build/outputs/#{android_package_type}/#{build_type}/app-#{build_type}#{signed}#{android_package_extension}"
         ENV['CAPACITOR_IOS_RELEASE_BUILD_PATH'] = "./ios/build/device/#{app_name}.ipa"
 
         # TODO: https://github.com/bamlab/fastlane-plugin-cordova/issues/7
@@ -153,7 +169,7 @@ module Fastlane
       def self.run(params)
         self.check_platform(params)
         self.build(params)
-        self.set_build_paths(params[:release])
+        self.set_build_paths(params, params[:release])
       end
 
       #####################################################
