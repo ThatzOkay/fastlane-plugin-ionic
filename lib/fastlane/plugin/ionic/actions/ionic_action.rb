@@ -43,7 +43,7 @@ module Fastlane
           # handle all other cases
           else
             unless param_value.to_s.empty?
-              platform_args << "--#{cli_param}=#{param_value.shellescape}"
+              platform_args << "--#{cli_param}=#{param_value.shellescape}" if param_value.is_a?(String)
             end
           end
         end
