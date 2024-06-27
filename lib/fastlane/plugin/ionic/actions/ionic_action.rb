@@ -20,6 +20,7 @@ module Fastlane
       }
 
       IOS_ARGS_MAP = {
+        scheme:              'scheme',
         type:                 'packageType',
         team_id:              'developmentTeam',
         provisioning_profile: 'provisioningProfile',
@@ -42,11 +43,8 @@ module Fastlane
             end
           # handle all other cases
           else
-            unless param_value.to_s.empty?
-              if param_value.is_a?(String)
-                platform_args << "--#{cli_param}=#{param_value.shellescape}"
-              else
-              end
+            if !param_value.to_s.empty? && param_value.kind_of?(String)
+              platform_args << "--#{cli_param}=#{param_value.shellescape}"
             end
           end
         end
@@ -123,7 +121,7 @@ module Fastlane
             }
           )
         end
-        
+
         is_windows = (ENV['OS'] == 'Windows_NT')
         if is_windows
           output = `powershell -Command "(gcm bunx).Path"`
@@ -136,7 +134,7 @@ module Fastlane
               sh "npx capacitor-assets generate"
             end
           end
-        else 
+        else
           if !`which bunx`.empty?
             if `bun pm ls`.include?('@capacitor/assets')
               sh "bunx capacitor-assets generate"
@@ -150,7 +148,7 @@ module Fastlane
 
         if params[:platform].to_s == 'ios'
           sh "ionic capacitor build #{params[:platform]} --no-open --no-interactive #{args.join(' ')} -- #{ios_args}" 
-          sh "xcodebuild -workspace ios/#{self.get_app_name}.xcworkspace -scheme #{self.get_app_name} #{ios_args}"
+          sh "xcodebuild -configuration debug -workspace ios/*.xcworkspace -scheme #{params[:scheme]} build"
         elsif params[:platform].to_s == 'android'
           sh "ionic capacitor build #{params[:platform]} --no-open --no-interactive #{args.join(' ')} -- -- #{android_args}" 
           if params[:android_package_type] == 'bundle'
