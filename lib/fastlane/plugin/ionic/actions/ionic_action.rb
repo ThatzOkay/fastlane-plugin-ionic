@@ -280,6 +280,13 @@ module Fastlane
             default_value: CredentialsManager::AppfileConfig.try_fetch_value(:team_id)
           ),
           FastlaneCore::ConfigItem.new(
+            key: :scheme,
+            env_name: "CAPACITOR_IOS_SCHEME",
+            description: "The development team (Team ID) to use for code signing",
+            is_string: true,
+            default_value: CredentialsManager::AppfileConfig.try_fetch_value(:scheme)
+          ),
+          FastlaneCore::ConfigItem.new(
             key: :provisioning_profile,
             env_name: "CAPACITOR_IOS_PROVISIONING_PROFILE",
             description: "GUID of the provisioning profile to be used for signing",
