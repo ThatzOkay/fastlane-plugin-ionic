@@ -14,11 +14,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install Ruby 2.6.10
-      run: |
-        git clone https://github.com/rbenv/ruby-build.git
-        sudo ./ruby-build/bin/ruby-build 2.6.10 /opt/hostedtoolcache/Ruby/2.6.10/x64
-        sudo touch /opt/hostedtoolcache/Ruby/2.6.10/x64.complete
+    
+    - name: Set up Ruby 3.3.0
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 3.3.0
 
     - name: Publish to GPR
       run: |
