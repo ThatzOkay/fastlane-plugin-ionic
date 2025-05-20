@@ -65,7 +65,7 @@ module Fastlane
 
         if params[:provisioning_profile].empty?
           # If `match` or `sigh` were used before this, use the certificates returned from there
-          params[:provisioning_profile] = ENV['SIGH_UUID'] || ENV["sigh_#{app_identifier}_#{params[:type].sub('-', '')}"]
+          params[:provisioning_profile] = ENV['SIGH_UUID'] || ENV["sigh_#{app_identifier}_#{params[:type].sub('-', '')}" || ""]
         end
 
         if params[:type] == 'adhoc'
@@ -103,7 +103,7 @@ module Fastlane
         args << '--browserify' if params[:browserify]
         args << '--verbose' if params[:verbose]
 
-        if !params[:capacitor_build_config_file].to_s.empty?
+        unless params[:capacitor_build_config_file].to_s.empty?
           args << "--buildConfig=#{Shellwords.escape(params[:capacitor_build_config_file])}"
         end
 
@@ -122,35 +122,39 @@ module Fastlane
           )
         end
 
-        is_windows = (ENV['OS'] == 'Windows_NT')
-        if is_windows
-          output = `powershell -Command "(gcm bunx).Path"`
-          if !output.empty?
-            if `bun pm ls`.include?('@capacitor/assets')
-              sh "bunx capacitor-assets generate"
+        if params[:skip_asset_gen] == false
+          is_windows = (ENV['OS'] == 'Windows_NT')
+          if is_windows
+            output = `powershell -Command "(gcm bunx).Path"`
+            if !output.empty?
+              if `bun pm ls`.include?('@capacitor/assets')
+                sh "bunx capacitor-assets generate"
+              end
+            else
+              if `npm list @capacitor/assets`.include?('@capacitor/assets')
+                sh "npx capacitor-assets generate"
+              end
             end
           else
-            if `npm list @capacitor/assets`.include?('@capacitor/assets')
-              sh "npx capacitor-assets generate"
-            end
-          end
-        else
-          if !`which bunx`.empty?
-            if `bun pm ls`.include?('@capacitor/assets')
-              sh "bunx capacitor-assets generate"
-            end
-          else
-            if `npm list @capacitor/assets`.include?('@capacitor/assets')
-              sh "npx capacitor-assets generate"
+            if !`which bunx`.empty?
+              if `bun pm ls`.include?('@capacitor/assets')
+                sh "bunx capacitor-assets generate"
+              end
+            else
+              if `npm list @capacitor/assets`.include?('@capacitor/assets')
+                sh "npx capacitor-assets generate"
+              end
             end
           end
         end
 
+        prod_flag = params[:is_release] ? '--prod' : ''
+
         if params[:platform].to_s == 'ios'
-          sh "ionic capacitor build #{params[:platform]} --no-open --no-interactive #{args.join(' ')} -- #{ios_args}" 
+          sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
           sh "xcodebuild -configuration debug -workspace ios/*.xcworkspace -scheme #{params[:scheme]} build"
         elsif params[:platform].to_s == 'android'
-          sh "ionic capacitor build #{params[:platform]} --no-open --no-interactive #{args.join(' ')} -- -- #{android_args}" 
+          sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
           if params[:android_package_type] == 'bundle'
             if !params[:keystore_path].empty?
               sh "./android/gradlew --project-dir android app:bundleRelease -Pandroid.injected.signing.store.file=#{params[:keystore_path]} -Pandroid.injected.signing.store.password=#{params[:keystore_password]} -Pandroid.injected.signing.key.alias=#{params[:keystore_alias]} -Pandroid.injected.signing.key.password=#{params[:key_password]}"
