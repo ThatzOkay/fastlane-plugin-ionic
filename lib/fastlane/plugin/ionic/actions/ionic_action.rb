@@ -148,7 +148,7 @@ module Fastlane
           end
         end
 
-        prod_flag = params[:is_release] ? '--prod' : ''
+        prod_flag = params[:release] ? '--prod' : ''
 
         if params[:platform].to_s == 'ios'
           sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
@@ -172,9 +172,9 @@ module Fastlane
       end
 
       # export build paths (run step #3)
-      def self.set_build_paths(params, is_release)
+      def self.set_build_paths(params, release)
         app_name = self.get_app_name
-        build_type = is_release ? 'release' : 'debug'
+        build_type = release ? 'release' : 'debug'
 
         # Update the build path accordingly if Android is being
         # built as an Android Application Bundle.
@@ -282,7 +282,7 @@ module Fastlane
           FastlaneCore::ConfigItem.new(
             key: :scheme,
             env_name: "CAPACITOR_IOS_SCHEME",
-            description: "The development team (Team ID) to use for code signing",
+            description: "The Schema of the app seen as in xcode",
             is_string: true,
             default_value: CredentialsManager::AppfileConfig.try_fetch_value(:scheme)
           ),
