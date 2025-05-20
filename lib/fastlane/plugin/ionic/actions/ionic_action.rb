@@ -151,8 +151,26 @@ module Fastlane
         prod_flag = params[:release] ? '--prod' : ''
         configuration = params[:release] ? 'release' : 'debug'
         if params[:platform].to_s == 'ios'
+          latest_sdk = `xcodebuild -showsdks`.lines
+            .select { |line| line.include?('iphoneos') }
+            .last
+            &.split
+            &.last
           sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
-          sh "/usr/bin/xcodebuild -configuration #{configuration} -workspace #{params[:workspace]} -scheme #{params[:scheme]} build DEVELOPMENT_TEAM=#{params[:team_id]}"
+          cmd = [
+            '/usr/bin/xcodebuild',
+            "-sdk #{latest_sdk}",
+            "-configuration #{configuration}",
+            "-workspace #{params[:workspace]}",
+            "-scheme #{params[:scheme]}",
+            'build',
+            'CODE_SIGN_STYLE=Automatic',
+            "DEVELOPMENT_TEAM=#{params[:team_id]}"
+          ].join(' ')
+
+          cmd += ' | xcpretty -r junit --no-color' if `which xcpretty`.strip != ''
+
+          sh cmd
         elsif params[:platform].to_s == 'android'
           sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
           if params[:android_package_type] == 'bundle'
