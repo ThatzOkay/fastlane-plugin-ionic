@@ -14,12 +14,39 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Ruby 3.3.0
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 3.3.0
 
+    - name: Install dependencies for Ruby build
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev libreadline-dev zlib1g-dev \
+                                libyaml-dev libgmp-dev libncurses5-dev \
+                                libffi-dev git curl autoconf bison build-essential
+
+    - name: Install ruby-build
+      run: |
+        git clone https://github.com/rbenv/ruby-build.git
+        sudo ./ruby-build/install.sh
+
+    - name: Build and install Ruby 3.3.0 into toolcache
+      run: |
+        RUBY_VERSION=3.3.0
+        INSTALL_DIR="/opt/hostedtoolcache/Ruby/$RUBY_VERSION/x64"
+
+        sudo mkdir -p "$INSTALL_DIR"
+        sudo ruby-build "$RUBY_VERSION" "$INSTALL_DIR"
+
+        # Mark as complete
+        sudo touch "$INSTALL_DIR.complete"
+
+        # Add to PATH
+        echo "export PATH=$INSTALL_DIR/bin:\$PATH" >> "$GITHUB_ENV"
+        echo "export RUBY_ROOT=$INSTALL_DIR" >> "$GITHUB_ENV"
+
+    - name: Verify Ruby installation
+      run: |
+        ruby -v
+        gem -v
+        
     - name: Publish to GPR
       run: |
         mkdir -p $HOME/.gem
