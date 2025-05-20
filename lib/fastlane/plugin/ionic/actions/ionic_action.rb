@@ -380,6 +380,14 @@ module Fastlane
             is_string: true,
             optional: true,
             default_value: ''
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :skip_asset_gen,
+            env_name: "SKIP_ASSET_GEN",
+            description: "Skip generation of assets",
+            is_string: false,
+            optional: true,
+            default_value: false
           )
         ]
       end
