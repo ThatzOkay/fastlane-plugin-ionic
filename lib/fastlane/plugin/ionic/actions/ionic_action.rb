@@ -149,10 +149,10 @@ module Fastlane
         end
 
         prod_flag = params[:release] ? '--prod' : ''
-
+        configuration = params[:release] ? 'release' : 'debug'
         if params[:platform].to_s == 'ios'
           sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
-          sh "xcodebuild -configuration debug -workspace ios/*.xcworkspace -scheme #{params[:scheme]} build"
+          sh "/usr/bin/xcodebuild -configuration #{configuration} -workspace #{params[:workspace]} -scheme #{params[:scheme]} build DEVELOPMENT_TEAM=#{params[:team_id]}"
         elsif params[:platform].to_s == 'android'
           sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
           if params[:android_package_type] == 'bundle'
@@ -284,7 +284,14 @@ module Fastlane
             env_name: "CAPACITOR_IOS_SCHEME",
             description: "The Schema of the app seen as in xcode",
             is_string: true,
-            default_value: CredentialsManager::AppfileConfig.try_fetch_value(:scheme)
+            default_value: 'App'
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :workspace,
+            env_name: "CAPACITOR_IOS_WORKSPACE",
+            description: "The xcode workspace file path",
+            is_string: true,
+            default_value: 'ios/App/App.xcworkspace'
           ),
           FastlaneCore::ConfigItem.new(
             key: :provisioning_profile,
