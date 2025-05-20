@@ -9,9 +9,10 @@ jobs:
     name: Build + Publish
     runs-on: ubuntu-22.04
     permissions:
-      contents: read
-      packages: write
-      id-token: write
+      contents: read       # allow reading repo contents
+      id-token: write      # allow issuing OIDC tokens
+      packages: write      # allow pushing to RubyGems (if using GitHub Packages)
+      actions: read        # allow other GH Actions to run
 
     steps:
         # Set up
