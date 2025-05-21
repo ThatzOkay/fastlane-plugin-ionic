@@ -183,8 +183,6 @@ module Fastlane
             "-exportPath ./output/#{latest_sdk}/#{configuration}",
             '-exportOptionsPlist _XcodeTaskExportOptions.plist'
           ]
-
-          archive_cmd += ' | xcpretty -r junit --no-color' if `which xcpretty`.strip != ''
           sh archive_cmd
 
         elsif params[:platform].to_s == 'android'
