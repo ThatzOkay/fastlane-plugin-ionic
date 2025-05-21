@@ -164,7 +164,7 @@ module Fastlane
             "-workspace #{params[:workspace]}",
             "-scheme #{params[:scheme]}",
             'archive',
-            '-archivePath ios/build',
+            '-archivePath ./ios/build',
             'CODE_SIGN_STYLE=Automatic',
             "DEVELOPMENT_TEAM=#{params[:team_id]}"
           ].join(' ')
@@ -205,7 +205,7 @@ module Fastlane
         signed = is_signed ? '' : '-unsigned'
 
         ENV['CAPACITOR_ANDROID_RELEASE_BUILD_PATH'] = "./android/app/build/outputs/#{android_package_type}/#{build_type}/app-#{build_type}#{signed}#{android_package_extension}"
-        ENV['CAPACITOR_IOS_RELEASE_BUILD_PATH'] = "./ios/build/device/#{app_name}.ipa"
+        ENV['CAPACITOR_IOS_RELEASE_BUILD_PATH'] = "./ios/build/App.ipa"
 
         # TODO: https://github.com/bamlab/fastlane-plugin-cordova/issues/7
         # TODO: Set env vars that gym and Co automatically use
