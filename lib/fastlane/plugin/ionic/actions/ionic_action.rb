@@ -174,7 +174,7 @@ module Fastlane
           sh cmd
           sh '/usr/libexec/PlistBuddy -c Clear _XcodeTaskExportOptions.plist'
           sh "/usr/libexec/PlistBuddy -c \"Add :teamID string #{params[:team_id]}\" _XcodeTaskExportOptions.plist"
-          sh "/usr/libexec/PlistBuddy -c \"Add :method string app-store\" _XcodeTaskExportOptions.plist"
+          sh "/usr/libexec/PlistBuddy -c \"Add :method string #{params[:type]}}\" _XcodeTaskExportOptions.plist"
 
           archive_cmd = [
             '/usr/bin/xcodebuild',
@@ -218,8 +218,16 @@ module Fastlane
         signed = is_signed ? '' : '-unsigned'
 
         ENV['CAPACITOR_ANDROID_RELEASE_BUILD_PATH'] = "./android/app/build/outputs/#{android_package_type}/#{build_type}/app-#{build_type}#{signed}#{android_package_extension}"
-        ENV['CAPACITOR_IOS_RELEASE_BUILD_PATH'] = "./output/#{latest_sdk}/#{configuration}/#{params[:scheme]}.ipa"
 
+        configuration = params[:release] ? 'release' : 'debug'
+        if params[:platform].to_s == 'ios'
+          latest_sdk = `xcodebuild -showsdks`.lines
+                                             .select { |line| line.include?('iphoneos') }
+                                             .last
+                                             &.split
+                                             &.last
+          ENV['CAPACITOR_IOS_RELEASE_BUILD_PATH'] = "./output/#{latest_sdk}/#{configuration}/#{params[:scheme]}.ipa"
+        end
         # TODO: https://github.com/bamlab/fastlane-plugin-cordova/issues/7
         # TODO: Set env vars that gym and Co automatically use
       end
