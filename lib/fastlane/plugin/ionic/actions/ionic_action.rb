@@ -152,10 +152,10 @@ module Fastlane
         configuration = params[:release] ? 'release' : 'debug'
         if params[:platform].to_s == 'ios'
           latest_sdk = `xcodebuild -showsdks`.lines
-            .select { |line| line.include?('iphoneos') }
-            .last
-            &.split
-            &.last
+                                             .select { |line| line.include?('iphoneos') }
+                                             .last
+                                             &.split
+                                             &.last
           sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
           cmd = [
             '/usr/bin/xcodebuild',
@@ -163,7 +163,8 @@ module Fastlane
             "-configuration #{configuration}",
             "-workspace #{params[:workspace]}",
             "-scheme #{params[:scheme]}",
-            'build',
+            'archive',
+            '-archivePath ios/build',
             'CODE_SIGN_STYLE=Automatic',
             "DEVELOPMENT_TEAM=#{params[:team_id]}"
           ].join(' ')
