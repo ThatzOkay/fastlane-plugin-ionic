@@ -173,8 +173,8 @@ module Fastlane
 
           sh cmd
           sh '/usr/libexec/PlistBuddy -c Clear _XcodeTaskExportOptions.plist'
-          sh "/usr/libexec/PlistBuddy -c Add teamID string #{params[:team_id]} _XcodeTaskExportOptions.plist"
-          sh '/usr/libexec/PlistBuddy -c Add method string app-store _XcodeTaskExportOptions.plist'
+          sh "/usr/libexec/PlistBuddy -c \"Add :teamID string #{params[:team_id]}\" _XcodeTaskExportOptions.plist"
+          sh "/usr/libexec/PlistBuddy -c \"Add :method string app-store\" _XcodeTaskExportOptions.plist"
 
           archive_cmd = [
             '/usr/bin/xcodebuild',
