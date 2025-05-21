@@ -164,7 +164,7 @@ module Fastlane
             "-workspace #{params[:workspace]}",
             "-scheme #{params[:scheme]}",
             'archive',
-            '-archivePath ./ios/build',
+            "-archivePath ./#{params[:scheme]}",
             'CODE_SIGN_STYLE=Automatic',
             "DEVELOPMENT_TEAM=#{params[:team_id]}"
           ].join(' ')
@@ -172,6 +172,21 @@ module Fastlane
           cmd += ' | xcpretty -r junit --no-color' if `which xcpretty`.strip != ''
 
           sh cmd
+          sh '/usr/libexec/PlistBuddy -c Clear _XcodeTaskExportOptions.plist'
+          sh "/usr/libexec/PlistBuddy -c Add teamID string #{params[:team_id]} _XcodeTaskExportOptions.plist"
+          sh '/usr/libexec/PlistBuddy -c Add method string app-store _XcodeTaskExportOptions.plist'
+
+          archive_cmd = [
+            '/usr/bin/xcodebuild',
+            '-exportArchive',
+            "-archivePath ./#{params[:scheme]}.xcarchive",
+            "-exportPath ./output/#{latest_sdk}/#{configuration}",
+            '-exportOptionsPlist _XcodeTaskExportOptions.plist'
+          ]
+
+          archive_cmd += ' | xcpretty -r junit --no-color' if `which xcpretty`.strip != ''
+          sh archive_cmd
+
         elsif params[:platform].to_s == 'android'
           sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
           if params[:android_package_type] == 'bundle'
@@ -205,7 +220,7 @@ module Fastlane
         signed = is_signed ? '' : '-unsigned'
 
         ENV['CAPACITOR_ANDROID_RELEASE_BUILD_PATH'] = "./android/app/build/outputs/#{android_package_type}/#{build_type}/app-#{build_type}#{signed}#{android_package_extension}"
-        ENV['CAPACITOR_IOS_RELEASE_BUILD_PATH'] = "./ios/build/App.ipa"
+        ENV['CAPACITOR_IOS_RELEASE_BUILD_PATH'] = "./output/#{latest_sdk}/#{configuration}/#{params[:scheme]}.ipa"
 
         # TODO: https://github.com/bamlab/fastlane-plugin-cordova/issues/7
         # TODO: Set env vars that gym and Co automatically use
