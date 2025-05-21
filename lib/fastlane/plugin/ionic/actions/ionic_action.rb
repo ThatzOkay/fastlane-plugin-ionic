@@ -69,10 +69,10 @@ module Fastlane
         end
 
         if params[:type] == 'adhoc'
-          params[:type] = 'ad-hoc'
+          params[:type] = 'enterprise'
         end
         if params[:type] == 'appstore'
-          params[:type] = 'app-store'
+          params[:type] = 'app-store-connect'
         end
 
         return self.get_platform_args(params, IOS_ARGS_MAP)
