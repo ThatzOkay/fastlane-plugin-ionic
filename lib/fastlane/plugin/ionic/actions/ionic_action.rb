@@ -69,10 +69,10 @@ module Fastlane
         end
 
         if params[:type] == 'adhoc'
-          params[:type] = 'adhoc'
+          params[:type] = 'ad-hoc'
         end
         if params[:type] == 'appstore'
-          params[:type] = 'appstore'
+          params[:type] = 'app-store'
         end
 
         return self.get_platform_args(params, IOS_ARGS_MAP)
@@ -174,7 +174,7 @@ module Fastlane
           sh cmd
           sh '/usr/libexec/PlistBuddy -c Clear _XcodeTaskExportOptions.plist'
           sh "/usr/libexec/PlistBuddy -c \"Add :teamID string #{params[:team_id]}\" _XcodeTaskExportOptions.plist"
-          sh "/usr/libexec/PlistBuddy -c \"Add :method string #{params[:type]}}\" _XcodeTaskExportOptions.plist"
+          sh "/usr/libexec/PlistBuddy -c \"Add :method string #{params[:type]}\" _XcodeTaskExportOptions.plist"
 
           archive_cmd = [
             '/usr/bin/xcodebuild',
