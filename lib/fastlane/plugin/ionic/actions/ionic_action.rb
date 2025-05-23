@@ -148,9 +148,9 @@ module Fastlane
           end
         end
 
+        prod_flag = params[:release] ? '--prod' : ''
         sh "ionic capacitor build #{params[:platform]} --no-open #{prod_flag}"
 
-        prod_flag = params[:release] ? '--prod' : ''
         configuration = params[:release] ? 'release' : 'debug'
         if params[:platform].to_s == 'ios'
           latest_sdk = `xcodebuild -showsdks`.lines
