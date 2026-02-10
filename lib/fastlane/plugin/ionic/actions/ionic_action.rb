@@ -72,7 +72,7 @@ module Fastlane
           params[:type] = 'ad-hoc'
         end
         if params[:type] == 'appstore'
-          params[:type] = 'app-store'
+          params[:type] = 'app-store-connect'
         end
 
         return self.get_platform_args(params, IOS_ARGS_MAP)
@@ -158,11 +158,14 @@ module Fastlane
                                              .last
                                              &.split
                                              &.last
+
+          workspace_or_project = File.exist?(params[:workspace]) ? "-workspace #{params[:workspace]}" : "-project #{params[:project]}"
+          
           cmd = [
             '/usr/bin/xcodebuild',
             "-sdk #{latest_sdk}",
             "-configuration #{configuration}",
-            "-workspace #{params[:workspace]}",
+            "#{workspace_or_project}",
             "-scheme #{params[:scheme]}",
             'archive',
             "-archivePath ./#{params[:scheme]}",
@@ -333,6 +336,13 @@ module Fastlane
             description: "The xcode workspace file path",
             is_string: true,
             default_value: 'ios/App/App.xcworkspace'
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :project,
+            env_name: "CAPACITOR_IOS_PROJECT",
+            description: "The xcode project file path. If specified, this will be used instead of workspace or when no workspace is found",
+            is_string: true,
+            default_value: 'ios/App/App.xcodeproj'
           ),
           FastlaneCore::ConfigItem.new(
             key: :provisioning_profile,
