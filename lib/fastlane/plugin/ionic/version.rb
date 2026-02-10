@@ -1,5 +1,5 @@
 module Fastlane
-  module Ionic
-    VERSION = "0.4.0"
+  module IonicCapacitor
+    VERSION = "0.5.0"
   end
 end

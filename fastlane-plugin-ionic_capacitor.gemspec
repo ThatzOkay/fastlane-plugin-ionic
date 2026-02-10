@@ -5,7 +5,7 @@ require 'fastlane/plugin/ionic/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'fastlane-plugin-ionic_capacitor'
-  spec.version       = Fastlane::Ionic::VERSION
+  spec.version       = Fastlane::IonicCapacitor::VERSION
   spec.author        = 'ThatzOkay'
   spec.email         = 'noduhgamingxd@gmail.com'
 
