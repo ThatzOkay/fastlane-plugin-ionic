@@ -303,7 +303,7 @@ module Fastlane
             is_string: true,
             default_value: 'appstore',
             verify_block: proc do |value|
-              UI.user_error!("Valid options are development, enterprise, adhoc, and appstore.") unless ['development', 'enterprise', 'adhoc', 'appstore', 'ad-hoc', 'app-store'].include? value
+              UI.user_error!("Valid options are development, enterprise, adhoc, and appstore.") unless ['development', 'enterprise', 'adhoc', 'appstore', 'ad-hoc', 'app-store', 'app-store-connect'].include? value
             end
           ),
           FastlaneCore::ConfigItem.new(
